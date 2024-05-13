@@ -27,6 +27,17 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      - name: Terraform Initialize
+        run: terraform init
+        working-directory: ./terraform
+
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve
+        working-directory: ./terraform
+
       # Passo adicional para configurar kubectl
       - name: Install kubectl
         run: |
@@ -43,14 +54,3 @@ jobs:
       - name: Apply Kubernetes configuration
         run: |
           kubectl delete -f infra-kubernetes/manifest.yaml
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v1
-
-      - name: Terraform Initialize
-        run: terraform init
-        working-directory: ./terraform
-
-      - name: Terraform Destroy
-        run: terraform destroy -auto-approve
-        working-directory: ./terraform

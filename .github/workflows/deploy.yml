@@ -1,0 +1,59 @@
+name: 'Terraform'
+
+on:
+  pull_request:
+    branches: ["master"]
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      - name: Terraform Format
+        run: terraform fmt -check
+        working-directory: ./terraform
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./terraform
+
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: ./terraform
+
+      - name: Terraform Plan
+        run: terraform plan
+        working-directory: ./terraform
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: ./terraform
+
+        # Passo adicional para configurar kubectl
+      - name: Install kubectl
+        run: |
+          curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x ./kubectl
+          sudo mv ./kubectl /usr/local/bin/kubectl
+
+      # Atualizar o kubeconfig para o cluster EKS
+      - name: Set up EKS kubeconfig
+        run: |
+          aws eks --region us-east-1 update-kubeconfig --name fiap-fastfood-eks
+
+      - name: create namespace
+        run: kubectl create namespace fiap-pos-tech
+
+      # Aplicar a configuração do Kubernetes
+      - name: Apply Kubernetes configuration
+        run: kubectl apply -f infra-kubernetes/manifest.yaml

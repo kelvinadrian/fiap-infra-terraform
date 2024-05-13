@@ -56,6 +56,9 @@ jobs:
       - name: create namespace
         run: kubectl create namespace fiap-pos-tech
 
+      - name: apply mongo configuration
+        run: kubectl apply -f infra-kubernetes/mongo-All.yaml
+
       # Aplicar a configuração do Kubernetes
       - name: Apply Kubernetes configuration
         run: kubectl apply -f infra-kubernetes/manifest.yaml
